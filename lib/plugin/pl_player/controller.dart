@@ -281,7 +281,9 @@ class PlPlayerController {
   late bool massiveMode;
   late List<double> speedsList;
   // int? defaultDuration;
+  late double playSpeedDefault;
   late bool enableAutoLongPressSpeed;
+  late bool enableKeepLastSpeed;
   late bool enableLongPressSpeedIncrease;
   late bool enableLongShowControl;
   late bool horizontalScreen;
@@ -395,9 +397,12 @@ class PlPlayerController {
               videoStorage.get(VideoBoxKey.playRepeat,
                   defaultValue: PlayRepeat.pause.value),
         );
-    _playbackSpeed.value = videoStorage
+    playSpeedDefault = videoStorage
         .get(VideoBoxKey.playSpeedDefault, defaultValue: 1.0)
         .toDouble();
+    _playbackSpeed.value = playSpeedDefault;
+    enableKeepLastSpeed =
+        setting.get(SettingBoxKey.enableKeepLastSpeed, defaultValue: false);
     enableAutoLongPressSpeed = setting
         .get(SettingBoxKey.enableAutoLongPressSpeed, defaultValue: false);
     enableLongPressSpeedIncrease = setting
@@ -733,10 +738,10 @@ class PlPlayerController {
     if (videoType.value == 'live') {
       await setPlaybackSpeed(1.0);
     } else {
-      if (_playbackSpeed.value != 1.0) {
+      if (enableKeepLastSpeed) {
         await setPlaybackSpeed(_playbackSpeed.value);
       } else {
-        await setPlaybackSpeed(1.0);
+        await setPlaybackSpeed(playSpeedDefault);
       }
     }
     getVideoFit();
@@ -973,12 +978,12 @@ class PlPlayerController {
   }
 
   // 还原默认速度
-  Future<void> setDefaultSpeed() async {
-    double speed =
-        videoStorage.get(VideoBoxKey.playSpeedDefault, defaultValue: 1.0);
-    await _videoPlayerController?.setRate(speed);
-    _playbackSpeed.value = speed;
-  }
+  // Future<void> setDefaultSpeed() async {
+  //   double speed =
+  //       videoStorage.get(VideoBoxKey.playSpeedDefault, defaultValue: 1.0);
+  //   await _videoPlayerController?.setRate(speed);
+  //   _playbackSpeed.value = speed;
+  // }
 
   /// 设置倍速
   // Future<void> togglePlaybackSpeed() async {

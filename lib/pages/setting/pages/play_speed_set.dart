@@ -21,6 +21,7 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
   late double longPressSpeedDefault;
   late List<double> customSpeedsList;
   late bool enableAutoLongPressSpeed;
+  late bool enableKeepLastSpeed;
   late bool enableLongPressSpeedIncrease;
   List<Map<dynamic, dynamic>> sheetMenu = [
     {
@@ -69,8 +70,11 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
         .map((e) => e.toDouble()));
     enableAutoLongPressSpeed = settingStorage
         .get(SettingBoxKey.enableAutoLongPressSpeed, defaultValue: false);
+    enableKeepLastSpeed = settingStorage.get(SettingBoxKey.enableKeepLastSpeed,
+        defaultValue: false);
     if (enableAutoLongPressSpeed) {
       Map newItem = sheetMenu[1];
+      // 隐藏默认长按倍速显示
       newItem['show'] = false;
       setState(() {
         sheetMenu[1] = newItem;
@@ -228,6 +232,18 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
               title: Text('当前默认倍速',
                   style: Theme.of(context).textTheme.titleMedium),
               subtitle: Text(playSpeedDefault.toString()),
+            ),
+            SetSwitchItem(
+              title: '视频记忆倍速',
+              subTitle: '记忆上次观看视频时倍速',
+              setKey: SettingBoxKey.enableKeepLastSpeed,
+              defaultVal: enableKeepLastSpeed,
+              callFn: (val) {
+                setState(() {
+                  enableKeepLastSpeed = val;
+                });
+                PlPlayerController.updateSettingsIfExist();
+              },
             ),
             SetSwitchItem(
               title: '动态长按倍速',
