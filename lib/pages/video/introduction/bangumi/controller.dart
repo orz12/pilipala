@@ -316,7 +316,7 @@ class BangumiIntroController extends GetxController {
     videoDetailCtr.bvid = bvid;
     videoDetailCtr.cid.value = cid;
     videoDetailCtr.danmakuCid.value = cid;
-    videoDetailCtr.queryVideoUrl();
+    videoDetailCtr.queryVideoUrl(isFromSamePlayList: true);
     lastPlayCid.value = cid;
     // 触发媒体通知更新
     bangumiDetail.refresh();

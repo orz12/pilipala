@@ -1,3 +1,4 @@
+import 'package:PiliPalaX/pages/setting/widgets/select_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -21,7 +22,7 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
   late double longPressSpeedDefault;
   late List<double> customSpeedsList;
   late bool enableAutoLongPressSpeed;
-  late bool enableKeepLastSpeed;
+  late dynamic keepLastSpeed;
   late bool enableLongPressSpeedIncrease;
   List<Map<dynamic, dynamic>> sheetMenu = [
     {
@@ -70,8 +71,8 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
         .map((e) => e.toDouble()));
     enableAutoLongPressSpeed = settingStorage
         .get(SettingBoxKey.enableAutoLongPressSpeed, defaultValue: false);
-    enableKeepLastSpeed = settingStorage.get(SettingBoxKey.enableKeepLastSpeed,
-        defaultValue: false);
+    keepLastSpeed = settingStorage.get(SettingBoxKey.keepLastSpeed,
+        defaultValue: KeepLastSpeed.same_playlist.code);
     if (enableAutoLongPressSpeed) {
       Map newItem = sheetMenu[1];
       // 隐藏默认长按倍速显示
@@ -212,6 +213,11 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
 
   @override
   Widget build(BuildContext context) {
+    TextStyle titleStyle = Theme.of(context).textTheme.titleMedium!;
+    TextStyle subTitleStyle = Theme.of(context)
+        .textTheme
+        .labelMedium!
+        .copyWith(color: Theme.of(context).colorScheme.outline);
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -233,16 +239,29 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
                   style: Theme.of(context).textTheme.titleMedium),
               subtitle: Text(playSpeedDefault.toString()),
             ),
-            SetSwitchItem(
-              title: '视频记忆倍速',
-              subTitle: '记忆上次观看视频时倍速',
-              setKey: SettingBoxKey.enableKeepLastSpeed,
-              defaultVal: enableKeepLastSpeed,
-              callFn: (val) {
-                setState(() {
-                  enableKeepLastSpeed = val;
-                });
-                PlPlayerController.updateSettingsIfExist();
+            ListTile(
+              title: Text('视频倍速记忆', style: titleStyle),
+              subtitle: Text(
+                '当前选择：${KeepLastSpeedCode.fromCode(keepLastSpeed)!.description}',
+                style: subTitleStyle,
+              ),
+              onTap: () async {
+                String? result = await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return SelectDialog<String>(
+                        title: '视频记忆倍速',
+                        value: keepLastSpeed,
+                        values: KeepLastSpeed.values.map((e) {
+                          return {'title': e.description, 'value': e.code};
+                        }).toList());
+                  },
+                );
+                if (result != null) {
+                  keepLastSpeed = result;
+                  setting.put(SettingBoxKey.keepLastSpeed, result);
+                  setState(() {});
+                }
               },
             ),
             SetSwitchItem(

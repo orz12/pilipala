@@ -114,6 +114,8 @@ class PlPlayerController {
   Rx<bool> _isSliderMoving = false.obs;
   PlaylistMode _looping = PlaylistMode.none;
   bool _autoPlay = false;
+  // 实现 Issue #1206 自主选择是否记忆播放倍速
+  bool _keepSpeed = false;
   final bool _listenersInitialized = false;
 
   // 记录历史记录
@@ -283,7 +285,6 @@ class PlPlayerController {
   // int? defaultDuration;
   late double playSpeedDefault;
   late bool enableAutoLongPressSpeed;
-  late bool enableKeepLastSpeed;
   late bool enableLongPressSpeedIncrease;
   late bool enableLongShowControl;
   late bool horizontalScreen;
@@ -401,8 +402,6 @@ class PlPlayerController {
         .get(VideoBoxKey.playSpeedDefault, defaultValue: 1.0)
         .toDouble();
     _playbackSpeed.value = playSpeedDefault;
-    enableKeepLastSpeed =
-        setting.get(SettingBoxKey.enableKeepLastSpeed, defaultValue: false);
     enableAutoLongPressSpeed = setting
         .get(SettingBoxKey.enableAutoLongPressSpeed, defaultValue: false);
     enableLongPressSpeedIncrease = setting
@@ -515,8 +514,7 @@ class PlPlayerController {
     PlaylistMode looping = PlaylistMode.none,
     // 初始化播放位置
     Duration seekTo = Duration.zero,
-    // 初始化播放速度
-    double speed = 1.0,
+    bool keepSpeed = false,
     // 硬件加速
     bool enableHA = true,
     String? hwdec,
@@ -536,9 +534,8 @@ class PlPlayerController {
 
       this.dataSource = dataSource;
       _autoPlay = autoplay;
+      _keepSpeed = keepSpeed;
       _looping = looping;
-      // 初始化视频倍速
-      // _playbackSpeed.value = speed;
       // 初始化数据加载状态
       dataStatus.status.value = DataStatus.loading;
       // 初始化全屏方向
@@ -738,7 +735,7 @@ class PlPlayerController {
     if (videoType.value == 'live') {
       await setPlaybackSpeed(1.0);
     } else {
-      if (enableKeepLastSpeed) {
+      if (_keepSpeed) {
         await setPlaybackSpeed(_playbackSpeed.value);
       } else {
         await setPlaybackSpeed(playSpeedDefault);

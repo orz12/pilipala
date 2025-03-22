@@ -525,7 +525,7 @@ class VideoIntroController extends GetxController {
     videoDetailCtr.oid.value = aid ?? IdUtils.bv2av(bvid);
     videoDetailCtr.cid.value = cid;
     videoDetailCtr.danmakuCid.value = cid;
-    videoDetailCtr.queryVideoUrl();
+    videoDetailCtr.queryVideoUrl(isFromSamePlayList: true);
     // 重新请求相关视频
     try {
       final RelatedController relatedCtr =

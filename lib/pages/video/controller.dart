@@ -86,6 +86,7 @@ class VideoDetailController extends GetxController
   late bool isFirstTime = true;
   PreferredSizeWidget? headerControl;
 
+  late String keepLastSpeed;
   // late bool enableCDN;
   late int? cacheVideoQa;
   late String cacheDecode;
@@ -149,6 +150,8 @@ class VideoDetailController extends GetxController
     }
     danmakuCid.value = cid.value;
 
+    keepLastSpeed = setting.get(SettingBoxKey.keepLastSpeed,
+        defaultValue: KeepLastSpeed.same_playlist.code);
     // CDN优化
     // enableCDN = setting.get(SettingBoxKey.enableCDN, defaultValue: true);
 
@@ -271,7 +274,7 @@ class VideoDetailController extends GetxController
       audioUrl = firstAudio.baseUrl ?? '';
     }
 
-    playerInit();
+    playerInit(keepSpeed: true);
   }
 
   Future playerInit({
@@ -280,6 +283,8 @@ class VideoDetailController extends GetxController
     seekToTime,
     duration,
     bool autoplay = true,
+    // 是否使用上次播放时的倍速
+    bool keepSpeed = false,
   }) async {
     /// 设置/恢复 屏幕亮度
     // if (brightness != null) {
@@ -321,6 +326,7 @@ class VideoDetailController extends GetxController
         cid: cid.value,
         enableHeart: enableHeart,
         autoplay: autoplay,
+        keepSpeed: keepSpeed,
       );
     } else {
       resumePlay = false;
@@ -331,10 +337,23 @@ class VideoDetailController extends GetxController
   }
 
   // 视频链接
-  Future queryVideoUrl() async {
+  Future queryVideoUrl({bool isFromSamePlayList = false}) async {
     var result = await VideoHttp.videoUrl(cid: cid.value, bvid: bvid);
     if (result['status']) {
       data = result['data'];
+      late final bool keepSpeed;
+      switch (KeepLastSpeedCode.fromCode(keepLastSpeed)) {
+        case KeepLastSpeed.same_playlist:
+          keepSpeed = isFromSamePlayList;
+          break;
+        case KeepLastSpeed.always:
+          keepSpeed = true;
+          break;
+        case KeepLastSpeed.never:
+        case null:
+          keepSpeed = false;
+          break;
+      }
       if (data.acceptDesc!.isNotEmpty && data.acceptDesc!.contains('试看')) {
         SmartDialog.showNotify(
           msg: '该视频为专属视频，仅提供试看',
@@ -356,7 +375,7 @@ class VideoDetailController extends GetxController
         currentVideoQa = VideoQualityCode.fromCode(data.quality!)!;
         if (autoPlay.value) {
           isShowCover.value = false;
-          await playerInit();
+          await playerInit(keepSpeed: keepSpeed);
         }
         return result;
       }
@@ -424,7 +443,6 @@ class VideoDetailController extends GetxController
       //       (e) => e.codecs!.startsWith(currentDecodeFormats.code),
       // ).toList();
 
-
       // videoUrl = enableCDN
       //     ? VideoUtils.getCdnUrl(firstVideo)
       //     : (firstVideo.backupUrl ?? firstVideo.baseUrl!);
@@ -468,7 +486,7 @@ class VideoDetailController extends GetxController
       defaultST = Duration(milliseconds: data.lastPlayTime!);
       if (autoPlay.value) {
         isShowCover.value = false;
-        await playerInit();
+        await playerInit(keepSpeed: keepSpeed);
       }
     } else {
       if (result['code'] == -404) {

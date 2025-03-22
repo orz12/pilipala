@@ -145,7 +145,7 @@ class SettingBoxKey {
       autoMiniPlayer = 'autoMiniPlayer',
       autoPiP = 'autoPiP',
       pipNoDanmaku = 'pipNoDanmaku',
-      enableKeepLastSpeed = 'enableKeepLastSpeed',
+      keepLastSpeed = 'keepLastSpeed',
       enableAutoLongPressSpeed = 'enableAutoLongPressSpeed',
       enableLongPressSpeedIncrease = 'enableLongPressSpeedIncrease',
       subtitlePreference = 'subtitlePreference',

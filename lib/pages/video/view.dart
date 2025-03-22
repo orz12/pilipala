@@ -170,7 +170,11 @@ class _VideoDetailPageState extends State<VideoDetailPage>
         if (value['status']) {
           // fix: 手动播放首个视频前媒体通知不完整
           videoPlayerServiceHandler.onStatusChange(PlayerStatus.paused, false);
-          videoDetailController.playerInit(autoplay: false);
+          videoDetailController.playerInit(
+              autoplay: false,
+              keepSpeed: KeepLastSpeedCode.fromCode(
+                      videoDetailController.keepLastSpeed) ==
+                  KeepLastSpeed.always);
           plPlayerController = videoDetailController.plPlayerController;
           plPlayerController!.addStatusLister(playerListener);
           listenFullScreenStatus();
@@ -388,7 +392,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
     floatingManager.closeFloating(globalId);
     // final bool autoplay = autoPlayEnable;
     videoDetailController.playerInit(
-        autoplay: videoDetailController.autoPlay.value);
+        autoplay: videoDetailController.autoPlay.value, keepSpeed: true);
 
     videoDetailController.autoPlay.value =
         !videoDetailController.isShowCover.value;
